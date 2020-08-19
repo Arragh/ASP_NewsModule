@@ -1,1 +1,44 @@
-﻿<h2>News/Index</h2>
+﻿@model ASP_NewsModule.ViewModels.Home.IndexViewModel
+
+@foreach (var news in Model.News)
+{
+    <table border="1" width="100%">
+        <tr bgcolor="#47A7C7">
+            <td width="80%">@news.NewsTitle</td>
+            <td width="20%">@news.NewsDate.ToShortDateString()</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span style="white-space: pre-line">@news.NewsBody</span><br />
+                <center>
+                    @foreach (var image in Model.NewsImages)
+                    {
+                        if (image.NewsId == news.Id)
+                        {
+                            <a href="@Url.Content(image.ImagePathNormal)"><img src="@Url.Content(image.ImagePathScaled)" /></a>
+                        }
+                    }
+                </center>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">@news.UserName</td>
+        </tr>
+    </table>
+}
+
+<center>
+    @for (int i = 1; i <= Model.TotalPages; i++)
+    {
+        if (i != Model.CurrentPage)
+        {
+            @Html.ActionLink(i.ToString(), "Index", new { pageNumber = i })
+            <span>&nbsp;</span>
+        }
+        else
+        {
+            @i
+            <span>&nbsp;</span>
+        }
+    }
+</center>
