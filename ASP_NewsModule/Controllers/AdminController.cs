@@ -89,7 +89,8 @@ namespace ASP_NewsModule.Controllers
                         // Если вдруг что-то пошло не так (напрмер, на вход подало не картинку), то выводим сообщение об ошибке
                         catch
                         {
-                            return Content("Ты кого пытаешься наебать?");
+                            ModelState.AddModelError("NewsImage", "Картинка не картинка вовсе...");
+                            return View(model);
                         }
 
                         // Сохраняем исходный файл в папку /files/images/normal/ в каталоге wwwroot
@@ -109,6 +110,8 @@ namespace ASP_NewsModule.Controllers
                         newsImages.Add(newsImage);
                     }
                 }
+
+                // Сохраняем всё в БД
                 await newsDB.NewsImages.AddRangeAsync(newsImages);
                 await newsDB.News.AddAsync(news);
                 await newsDB.SaveChangesAsync();
