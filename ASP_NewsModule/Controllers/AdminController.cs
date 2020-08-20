@@ -152,43 +152,46 @@ namespace ASP_NewsModule.Controllers
         #endregion
 
         #region Удалить новость [POST]
-        public async Task<IActionResult> DeleteNews(Guid newsId)
+        public async Task<IActionResult> DeleteNews(Guid newsId, bool isChecked) //(Guid newsId)
         {
-            // Создаем экземпляр новости для удаления. Достаточно просто присвоить Id удаляемой записи
-            News news = new News { Id = newsId };
-
-            // Создаем список для привязанных к удаляемой записи изображений
-            List<NewsImage> newsImages = new List<NewsImage>();
-            // Находим привязанные изображения и кладём их в список
-            foreach (var image in newsDB.NewsImages)
+            if (isChecked)
             {
-                if (image.NewsId == newsId)
-                {
-                    newsImages.Add(image);
-                }
-            }
+                // Создаем экземпляр новости для удаления. Достаточно просто присвоить Id удаляемой записи
+                News news = new News { Id = newsId };
 
-            // Удаление изображений из папок
-            foreach (var image in newsImages)
-            {
-                // Исходные (полноразмерные) изображения
-                FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathNormal);
-                if (imageNormal.Exists)
+                // Создаем список для привязанных к удаляемой записи изображений
+                List<NewsImage> newsImages = new List<NewsImage>();
+                // Находим привязанные изображения и кладём их в список
+                foreach (var image in newsDB.NewsImages)
                 {
-                    imageNormal.Delete();
+                    if (image.NewsId == newsId)
+                    {
+                        newsImages.Add(image);
+                    }
                 }
-                // И их уменьшенные копии
-                FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathScaled);
-                if (imageScaled.Exists)
-                {
-                    imageScaled.Delete();
-                }
-            }
 
-            // Удаление данных из БД
-            newsDB.NewsImages.RemoveRange(newsImages); // Эта строка не обязательна, т.к. при удалении новости, записи с изображениями теряют связь по Id и трутся сами
-            newsDB.News.Remove(news);
-            await newsDB.SaveChangesAsync();
+                // Удаление изображений из папок
+                foreach (var image in newsImages)
+                {
+                    // Исходные (полноразмерные) изображения
+                    FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathNormal);
+                    if (imageNormal.Exists)
+                    {
+                        imageNormal.Delete();
+                    }
+                    // И их уменьшенные копии
+                    FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathScaled);
+                    if (imageScaled.Exists)
+                    {
+                        imageScaled.Delete();
+                    }
+                }
+
+                // Удаление данных из БД
+                newsDB.NewsImages.RemoveRange(newsImages); // Эта строка не обязательна, т.к. при удалении новости, записи с изображениями теряют связь по Id и трутся сами
+                newsDB.News.Remove(news);
+                await newsDB.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index", "Home");
         }

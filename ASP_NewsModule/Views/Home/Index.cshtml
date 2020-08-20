@@ -22,8 +22,15 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2" align="right">
-                @Html.ActionLink("Удалить запись", "DeleteNews", "Admin", new { newsId = news.Id })
+            <td>
+                <form asp-action="DeleteNews" asp-controller="Admin" method="post">
+                    <input type="hidden" name="NewsId" value="@news.Id" />
+                    <input type="checkbox" name="isChecked" id="isChecked" value="true" />
+                    <span>Подтвердить удаление</span>
+                    <input type="submit" value="Удалить" />
+                </form>
+            </td>
+            <td align="right">
                 @news.UserName
             </td>
         </tr>
