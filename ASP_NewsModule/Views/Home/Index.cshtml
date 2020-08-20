@@ -22,7 +22,10 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2" align="right">@news.UserName</td>
+            <td colspan="2" align="right">
+                @Html.ActionLink("Удалить запись", "DeleteNews", "Admin", new { newsId = news.Id })
+                @news.UserName
+            </td>
         </tr>
     </table>
     <br />
