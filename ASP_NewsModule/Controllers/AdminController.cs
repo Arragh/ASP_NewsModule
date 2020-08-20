@@ -89,7 +89,7 @@ namespace ASP_NewsModule.Controllers
                         // Если вдруг что-то пошло не так (например, на вход подало не картинку), то выводим сообщение об ошибке. Костыль, но пока так.
                         catch
                         {
-                            ModelState.AddModelError("NewsImage", "Картинка не картинка вовсе...");
+                            ModelState.AddModelError("NewsImage", "Допускаются только файлы изображений в форматах JPEG и PNG");
                             return View(model);
                         }
 
