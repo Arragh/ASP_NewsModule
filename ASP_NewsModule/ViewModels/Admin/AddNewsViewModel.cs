@@ -18,7 +18,6 @@ namespace ASP_NewsModule.ViewModels.Admin
         public string NewsBody { get; set; }
 
         [Display(Name = "Загрузить изображение")]
-        [FileExtensions(Extensions = "jpg,png", ErrorMessage = "Неверный формат изображения")]
         public NewsImage NewsImage { get; set; }
     }
 }
