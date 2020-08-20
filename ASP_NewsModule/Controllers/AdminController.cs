@@ -152,43 +152,58 @@ namespace ASP_NewsModule.Controllers
         #endregion
 
         #region Удалить новость [POST]
-        public async Task<IActionResult> DeleteNews(Guid newsId, bool isChecked) //(Guid newsId)
+        public async Task<IActionResult> DeleteNews(Guid newsId, bool isChecked, int imagesCount = 0)
         {
+            // Если удаление подтверждено, заходим в условия
             if (isChecked)
             {
                 // Создаем экземпляр новости для удаления. Достаточно просто присвоить Id удаляемой записи
                 News news = new News { Id = newsId };
 
-                // Создаем список для привязанных к удаляемой записи изображений
-                List<NewsImage> newsImages = new List<NewsImage>();
-                // Находим привязанные изображения и кладём их в список
-                foreach (var image in newsDB.NewsImages)
+                // Проверяем, присутствуют ли в новости изображения
+                if (imagesCount > 0)
                 {
-                    if (image.NewsId == newsId)
+                    // Создаем список для привязанных к удаляемой записи изображений
+                    List<NewsImage> newsImages = new List<NewsImage>();
+                    // Просматриваем всю БД с изображениями
+                    foreach (var image in newsDB.NewsImages)
                     {
-                        newsImages.Add(image);
+                        // Находим нужное и кладём в список
+                        if (image.NewsId == newsId)
+                        {
+                            newsImages.Add(image);
+                        }
+                        // Если счетчик изображений становится равным количеству изображений в списке, выходим из цикла
+                        if (imagesCount == newsImages.Count)
+                        {
+                            break;
+                        }
                     }
+
+                    // Удаление изображений из папок
+                    foreach (var image in newsImages)
+                    {
+                        // Исходные (полноразмерные) изображения
+                        FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathNormal);
+                        if (imageNormal.Exists)
+                        {
+                            imageNormal.Delete();
+                        }
+                        // И их уменьшенные копии
+                        FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathScaled);
+                        if (imageScaled.Exists)
+                        {
+                            imageScaled.Delete();
+                        }
+                    }
+
+                    // Удаляем изображения из БД
+                    // Эта строка не обязательна, т.к. при удалении новости, записи с изображениями теряют связь по Id и трутся сами
+                    // Достаточно просто удалить изображения из папок, что уже сделано выше
+                    newsDB.NewsImages.RemoveRange(newsImages);
                 }
 
-                // Удаление изображений из папок
-                foreach (var image in newsImages)
-                {
-                    // Исходные (полноразмерные) изображения
-                    FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathNormal);
-                    if (imageNormal.Exists)
-                    {
-                        imageNormal.Delete();
-                    }
-                    // И их уменьшенные копии
-                    FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathScaled);
-                    if (imageScaled.Exists)
-                    {
-                        imageScaled.Delete();
-                    }
-                }
-
-                // Удаление данных из БД
-                newsDB.NewsImages.RemoveRange(newsImages); // Эта строка не обязательна, т.к. при удалении новости, записи с изображениями теряют связь по Id и трутся сами
+                // Удаляем новость из БД
                 newsDB.News.Remove(news);
                 await newsDB.SaveChangesAsync();
             }

@@ -2,6 +2,7 @@
 
 @foreach (var news in Model.News)
 {
+    int imagesCount = 0;
     <table border="1" width="100%">
         <tr bgcolor="#47A7C7">
             <td width="80%">@news.NewsTitle</td>
@@ -16,6 +17,7 @@
                         if (image.NewsId == news.Id)
                         {
                             <a href="@Url.Content(image.ImagePathNormal)"><img src="@Url.Content(image.ImagePathScaled)" /></a>
+                            imagesCount++;
                         }
                     }
                 </center>
@@ -25,7 +27,8 @@
             <td>
                 <form asp-action="DeleteNews" asp-controller="Admin" method="post">
                     <input type="hidden" name="NewsId" value="@news.Id" />
-                    <input type="checkbox" name="isChecked" id="isChecked" value="true" />
+                    <input type="checkbox" name="isChecked" value="true" />
+                    <input type="hidden" name="imagesCount" value="@imagesCount" />
                     <span>Подтвердить удаление</span>
                     <input type="submit" value="Удалить" />
                 </form>
