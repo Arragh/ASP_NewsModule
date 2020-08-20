@@ -73,7 +73,7 @@ namespace ASP_NewsModule.Controllers
                         // Пути сохранения файла
                         string pathNormal = "/files/images/normal/" + imageName; // изображение исходного размера
                         string pathScaled = "/files/images/scaled/" + imageName; // уменьшенное изображение
-                        // В try делаем уменьшенную копию изображения
+                        // В try делаем уменьшенную копию изображения. Так же оператор try/catch выступает дополнительной проверкой типа загружаемого файла
                         try
                         {
                             using (var stream = uploadedImage.OpenReadStream())
@@ -86,7 +86,7 @@ namespace ASP_NewsModule.Controllers
                                 }
                             }
                         }
-                        // Если вдруг что-то пошло не так (напрмер, на вход подало не картинку), то выводим сообщение об ошибке
+                        // Если вдруг что-то пошло не так (например, на вход подало не картинку), то выводим сообщение об ошибке. Костыль, но пока так.
                         catch
                         {
                             ModelState.AddModelError("NewsImage", "Картинка не картинка вовсе...");

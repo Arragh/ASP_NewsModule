@@ -4,18 +4,18 @@
     <div>
         <label asp-for="NewsTitle"></label><br />
         <input type="text" asp-for="NewsTitle" width="300" />
-        <span asp-validation-for="NewsTitle"></span><br />
+        @Html.ValidationMessageFor(t=>t.NewsTitle)<br />
     </div>
     <div>
         <label asp-for="NewsBody"></label><br />
         <textarea asp-for="NewsBody" rows="30" cols="100"></textarea>
-        <span asp-validation-for="NewsBody"></span><br />
+        @Html.ValidationMessageFor(b=>b.NewsBody)<br />
     </div>
     <div>
-        <span asp-validation-for="NewsImage"></span><br />
-        <input type="file" name="uploads" /><br />
-        <input type="file" name="uploads" /><br />
-        <input type="file" name="uploads" /><br />
+        @Html.ValidationMessageFor(f=>f.NewsImage)<br />
+        <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
+        <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
+        <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
     </div>
     <div>
         <input type="submit" value="Опубликовать" />
