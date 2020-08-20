@@ -29,12 +29,15 @@ namespace ASP_NewsModule.Controllers
             return View();
         }
 
+        #region Создание новости [GET]
         [HttpGet]
         public IActionResult AddNews()
         {
             return View();
         }
+        #endregion
 
+        #region Создание новости [POST]
         [HttpPost]
         public async Task<IActionResult> AddNews(AddNewsViewModel model, IFormFileCollection uploads)
         {
@@ -69,7 +72,7 @@ namespace ASP_NewsModule.Controllers
                     if (uploadedImage.Length > 0)
                     {
                         // Присваиваем загружаемому файлу уникальное имя на основе Guid
-                        string imageName = Guid.NewGuid() + "_" + uploadedImage.FileName;
+                        string imageName = Guid.NewGuid() + "_" + uploadedImage.FileName.ToLower();
                         // Пути сохранения файла
                         string pathNormal = "/files/images/normal/" + imageName; // изображение исходного размера
                         string pathScaled = "/files/images/scaled/" + imageName; // уменьшенное изображение
@@ -89,7 +92,25 @@ namespace ASP_NewsModule.Controllers
                         // Если вдруг что-то пошло не так (например, на вход подало не картинку), то выводим сообщение об ошибке. Костыль, но пока так.
                         catch
                         {
-                            ModelState.AddModelError("NewsImage", "Допускаются только файлы изображений в форматах JPEG и PNG");
+                            // Создаем сообщение об ошибке для вывода пользователю
+                            ModelState.AddModelError("NewsImage", $"Файл {uploadedImage.FileName} имеет неверный формат.");
+                            // Удаляем только что созданные файлы (если ошибка возникла не на первом файле)
+                            foreach (var image in newsImages)
+                            {
+                                // Исходные (полноразмерные) изображения
+                                FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathNormal);
+                                if (imageNormal.Exists)
+                                {
+                                    imageNormal.Delete();
+                                }
+                                // И их уменьшенные копии
+                                FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + image.ImagePathScaled);
+                                if (imageScaled.Exists)
+                                {
+                                    imageScaled.Delete();
+                                }
+                            }
+                            // Возвращаем модель с сообщением об ошибке в представление
                             return View(model);
                         }
 
@@ -119,5 +140,6 @@ namespace ASP_NewsModule.Controllers
             }
             return View(model);
         }
+        #endregion
     }
 }
