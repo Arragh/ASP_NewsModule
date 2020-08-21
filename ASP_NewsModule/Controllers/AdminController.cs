@@ -1,13 +1,14 @@
 ﻿using ASP_NewsModule.Models.Home;
 using ASP_NewsModule.Models.Service;
 using ASP_NewsModule.ViewModels.Admin;
-using LazZiya.ImageResize;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -71,24 +72,34 @@ namespace ASP_NewsModule.Controllers
                     // Если размер входного файла больше 0, заходим в тело условия
                     if (uploadedImage.Length > 0)
                     {
-                        // Присваиваем загружаемому файлу уникальное имя на основе Guid и приводим имя к нижней нотации
-                        string imageName = Guid.NewGuid() + "_" + uploadedImage.FileName.ToLower();
+                        // Создаем новый объект класса FileInfo из полученного изображения для дальнейшей обработки
+                        FileInfo imgFile = new FileInfo(uploadedImage.FileName);
+                        // Приводим расширение к нижнему регистру (если оно было в верхнем)
+                        string imgExtension = imgFile.Extension.ToLower();
+                        // Генерируем новое имя для файла
+                        string newFileName = Guid.NewGuid() + imgExtension;
                         // Пути сохранения файла
-                        string pathNormal = "/files/images/normal/" + imageName; // изображение исходного размера
-                        string pathScaled = "/files/images/scaled/" + imageName; // уменьшенное изображение
+                        string pathNormal = "/files/images/normal/" + newFileName; // изображение исходного размера
+                        string pathScaled = "/files/images/scaled/" + newFileName; // уменьшенное изображение
 
                         // В операторе try/catch делаем уменьшенную копию изображения. Так же этот оператор выступает дополнительной проверкой на тип загружаемого файла
                         try
                         {
-                            using (var stream = uploadedImage.OpenReadStream())
+                            // Создаем объект класса SixLabors.ImageSharp.Image и грузим в него полученное изображение
+                            using (Image image = Image.Load(uploadedImage.OpenReadStream()))
                             {
-                                using (var img = Image.FromStream(stream))
+                                // Создаем уменьшенную копию и обрезаем её
+                                var clone = image.Clone(x => x.Resize(new ResizeOptions
                                 {
-                                    // Создаем уменьшенную копию изображения и сохраняем в папку /files/images/scaled/ в каталоге wwwroot
-                                    // Данная копия уменьшится и обрежется до 200х150(4:3), даже если имеет изначально другие пропорции(например 16:9)
-                                    img.ScaleAndCrop(200, 150).SaveAs(_appEnvironment.WebRootPath + pathScaled, 50); // 50 - качество картинки. Чем меньше качество - тем меньше объем изображения
-                                }
+                                    Mode = ResizeMode.Crop,
+                                    Size = new Size(300, 200)
+                                }));
+                                // Сохраняем уменьшенную копию
+                                clone.Save(_appEnvironment.WebRootPath + pathScaled, new JpegEncoder { Quality = 50 });
+                                // Сохраняем исходное изображение
+                                image.Save(_appEnvironment.WebRootPath + pathNormal);
                             }
+
                         }
                         // Если вдруг что-то пошло не так (например, на вход подало не картинку), то выводим сообщение об ошибке
                         catch
@@ -117,17 +128,11 @@ namespace ASP_NewsModule.Controllers
                             return View(model);
                         }
 
-                        // Сохраняем исходный файл в папку /files/images/normal/ в каталоге wwwroot
-                        using (FileStream file = new FileStream(_appEnvironment.WebRootPath + pathNormal, FileMode.Create))
-                        {
-                            await uploadedImage.CopyToAsync(file);
-                        }
-
                         // Создаем объект класса NewsImage со всеми параметрами
                         NewsImage newsImage = new NewsImage()
                         {
                             Id = Guid.NewGuid(),
-                            ImageName = imageName,
+                            ImageName = newFileName,
                             ImagePathNormal = pathNormal,
                             ImagePathScaled = pathScaled,
                             NewsId = news.Id
