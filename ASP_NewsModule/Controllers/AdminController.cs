@@ -43,9 +43,9 @@ namespace ASP_NewsModule.Controllers
         public async Task<IActionResult> AddNews(AddNewsViewModel model, IFormFileCollection uploads)
         {
             // Проверяем, чтобы размер файлов не превышал заданный объем
-            foreach (var image in uploads)
+            foreach (var file in uploads)
             {
-                if (image.Length > 2097152)
+                if (file.Length > 2097152)
                 {
                     ModelState.AddModelError("NewsImage", "Размер изображения не должен превышать 2-х мегабайт.");
                     break;
@@ -62,7 +62,7 @@ namespace ASP_NewsModule.Controllers
                     NewsTitle = model.NewsTitle,
                     NewsBody = model.NewsBody,
                     NewsDate = DateTime.Now,
-                    UserName = "Mnemonic"
+                    UserName = "Mnemonic" // В рабочем варианте будет брать имя из User.Identity
                 };
 
                 // Далее начинаем обработку изображений
@@ -95,9 +95,9 @@ namespace ASP_NewsModule.Controllers
                                     Size = new Size(300, 200)
                                 }));
                                 // Сохраняем уменьшенную копию
-                                clone.Save(_appEnvironment.WebRootPath + pathScaled, new JpegEncoder { Quality = 50 });
+                                await clone.SaveAsync(_appEnvironment.WebRootPath + pathScaled, new JpegEncoder { Quality = 50 });
                                 // Сохраняем исходное изображение
-                                image.Save(_appEnvironment.WebRootPath + pathNormal);
+                                await image.SaveAsync(_appEnvironment.WebRootPath + pathNormal);
                             }
 
                         }
@@ -153,6 +153,13 @@ namespace ASP_NewsModule.Controllers
 
             // Возврат модели в представление в случае, если запорится валидация
             return View(model);
+        }
+        #endregion
+
+        #region Редактировать новость [GET]
+        public IActionResult EditNews()
+        {
+            return View();
         }
         #endregion
 
