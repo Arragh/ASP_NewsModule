@@ -9,6 +9,8 @@ namespace ASP_NewsModule.ViewModels.Admin
 {
     public class EditNewsViewModel
     {
+        public Guid NewsId { get; set; }
+
         [Required(ErrorMessage = "Требуется ввести заголовок.")]
         [Display(Name = "Заголовок")]
         [StringLength(100, ErrorMessage = "Заголовок должен быть от {1} до {2} символов.", MinimumLength = 4)]
@@ -21,9 +23,14 @@ namespace ASP_NewsModule.ViewModels.Admin
         [DataType(DataType.Text)]
         public string NewsBody { get; set; }
 
+        public DateTime NewsDate { get; set; }
+        public string UserName { get; set; }
+
         [Display(Name = "Загрузить изображение")]
         public NewsImage NewsImage { get; set; }
 
-        public List<NewsImage> NewsImages { get; set; }
+        public ICollection<NewsImage> NewsImages { get; set; }
+
+        public int ImagesCount { get; set; }
     }
 }

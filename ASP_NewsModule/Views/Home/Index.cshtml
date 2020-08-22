@@ -32,6 +32,11 @@
                     <span>Подтвердить удаление</span>
                     <input type="submit" value="Удалить" />
                 </form>
+                &nbsp;&nbsp;&nbsp;
+                <form asp-action="EditNews" asp-controller="Admin" method="get">
+                    <input type="hidden" name="newsId" value="@news.Id" />
+                    <input type="submit" value="Редактировать" />
+                </form>
             </td>
             <td align="right">
                 @news.UserName

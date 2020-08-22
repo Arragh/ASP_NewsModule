@@ -1,0 +1,44 @@
+﻿@model ASP_NewsModule.ViewModels.Admin.EditNewsViewModel
+
+<form asp-controller="Admin" asp-action="EditNews" method="post" enctype="multipart/form-data">
+    <div>
+        <input type="hidden" asp-for="NewsId" value="@Model.NewsId" />
+        <input type="hidden" asp-for="NewsDate" value="@Model.NewsDate" />
+        <input type="hidden" asp-for="UserName" value="@Model.UserName" />
+        <label asp-for="NewsTitle"></label><br />
+        <input type="text" asp-for="NewsTitle" width="300" />
+        @Html.ValidationMessageFor(t => t.NewsTitle)<br />
+    </div>
+    <div>
+        <label asp-for="NewsBody"></label><br />
+        <textarea asp-for="NewsBody" rows="30" cols="100"></textarea>
+        @Html.ValidationMessageFor(b => b.NewsBody)<br />
+    </div>
+    <div>
+        <font color="red">@Html.ValidationMessageFor(f => f.NewsImage)</font><br />
+        @if (Model.ImagesCount < 3)
+        {
+            for (int i = Model.ImagesCount; i < 3; i++)
+            {
+                <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
+            }
+        }
+    </div>
+    <div>
+        <input type="submit" value="Сохранить" />
+    </div>
+</form>
+<br /><br />
+@if (Model.NewsImages != null && Model.NewsImages.Count > 0)
+{
+    foreach (var image in Model.NewsImages)
+    {
+        <a href="@Url.Content(image.ImagePathNormal)"><img src="@Url.Content(image.ImagePathScaled)" /></a>
+        @Html.ActionLink("Удалить изображение", "EditNews", "Admin", new { newsId = Model.NewsId, imageToDeleteName = image.ImageName })
+    }
+}
+
+@section scripts
+{
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
