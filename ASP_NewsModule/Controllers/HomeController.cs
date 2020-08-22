@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ASP_NewsModule.Models.Home;
+﻿using ASP_NewsModule.Models.Home;
 using ASP_NewsModule.Models.Service;
 using ASP_NewsModule.ViewModels.Home;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ASP_NewsModule.Controllers
 {

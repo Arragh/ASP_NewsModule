@@ -11,7 +11,6 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ASP_NewsModule.Controllers
@@ -49,7 +48,7 @@ namespace ASP_NewsModule.Controllers
             {
                 if (file.Length > 2097152)
                 {
-                    ModelState.AddModelError("NewsImage", "Размер изображения не должен превышать 2-х мегабайт.");
+                    ModelState.AddModelError("NewsImage", $"Файл \"{file.FileName}\" превышает установленный лимит 2MB.");
                     break;
                 }
             }
@@ -146,7 +145,10 @@ namespace ASP_NewsModule.Controllers
                 }
 
                 // Если в процессе выполнения не возникло ошибок, сохраняем всё в БД
-                await newsDB.NewsImages.AddRangeAsync(newsImages);
+                if (newsImages != null && newsImages.Count > 0)
+                {
+                    await newsDB.NewsImages.AddRangeAsync(newsImages);
+                }
                 await newsDB.News.AddAsync(news);
                 await newsDB.SaveChangesAsync();
 
@@ -163,30 +165,36 @@ namespace ASP_NewsModule.Controllers
         [HttpGet]
         public async Task<IActionResult> EditNews(Guid newsId, string imageToDeleteName = null)
         {
-            //ViewBag.NewsId = newsId;
-
+            // Если есть изображение, которое надо удалить, заходим в тело условия
             if (imageToDeleteName != null)
             {
+                // Создаем экземпляр класса картинки и присваиваем ему данные из БД
                 NewsImage newsImage = await newsDB.NewsImages.FirstAsync(i => i.ImageName == imageToDeleteName);
 
-                // Исходные (полноразмерные) изображения
-                FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + newsImage.ImagePathNormal);
-                if (imageNormal.Exists)
+                // Делаем еще одну проверку. Лучше перебдеть. Если все ок, заходим в тело условия и удаляем изображения
+                if (newsImage != null)
                 {
-                    imageNormal.Delete();
+                    // Исходные (полноразмерные) изображения
+                    FileInfo imageNormal = new FileInfo(_appEnvironment.WebRootPath + newsImage.ImagePathNormal);
+                    if (imageNormal.Exists)
+                    {
+                        imageNormal.Delete();
+                    }
+                    // И их уменьшенные копии
+                    FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + newsImage.ImagePathScaled);
+                    if (imageScaled.Exists)
+                    {
+                        imageScaled.Delete();
+                    }
+                    // Удаляем информацию об изображениях из БД и сохраняем
+                    newsDB.NewsImages.Remove(newsImage);
+                    await newsDB.SaveChangesAsync();
                 }
-                // И их уменьшенные копии
-                FileInfo imageScaled = new FileInfo(_appEnvironment.WebRootPath + newsImage.ImagePathScaled);
-                if (imageScaled.Exists)
-                {
-                    imageScaled.Delete();
-                }
-
-                newsDB.NewsImages.Remove(newsImage);
-                await newsDB.SaveChangesAsync();
             }
 
+            // Создаем экземпляр класса News и присваиваем ему значения из БД
             News news = await newsDB.News.FirstAsync(n => n.Id == newsId);
+            // Создаем список изображений из БД, закрепленных за выбранной новостью
             List<NewsImage> images = new List<NewsImage>();
             foreach (var image in newsDB.NewsImages)
             {
@@ -196,6 +204,7 @@ namespace ASP_NewsModule.Controllers
                 }
             }
 
+            // Создаем модель для передачи в представление и присваиваем значения
             EditNewsViewModel model = new EditNewsViewModel()
             {
                 NewsTitle = news.NewsTitle,
@@ -207,7 +216,7 @@ namespace ASP_NewsModule.Controllers
                 UserName = news.UserName,
                 ImagesCount = images.Count
             };
-
+            // Передаем модель в представление
             return View(model);
         }
         #endregion
@@ -221,7 +230,7 @@ namespace ASP_NewsModule.Controllers
             {
                 if (file.Length > 2097152)
                 {
-                    ModelState.AddModelError("NewsImage", "Размер изображения не должен превышать 2-х мегабайт.");
+                    ModelState.AddModelError("NewsImage", $"Файл \"{file.FileName}\" превышает установленный лимит 2MB.");
                     break;
                 }
             }
@@ -275,7 +284,6 @@ namespace ASP_NewsModule.Controllers
                                 // Сохраняем исходное изображение
                                 await image.SaveAsync(_appEnvironment.WebRootPath + pathNormal);
                             }
-
                         }
                         // Если вдруг что-то пошло не так (например, на вход подало не картинку), то выводим сообщение об ошибке
                         catch
@@ -299,7 +307,6 @@ namespace ASP_NewsModule.Controllers
                                     imageScaled.Delete();
                                 }
                             }
-
                             // Возвращаем модель с сообщением об ошибке в представление
                             return View(model);
                         }
@@ -319,7 +326,10 @@ namespace ASP_NewsModule.Controllers
                 }
 
                 // Если в процессе выполнения не возникло ошибок, сохраняем всё в БД
-                await newsDB.NewsImages.AddRangeAsync(newsImages);
+                if (newsImages != null && newsImages.Count > 0)
+                {
+                    await newsDB.NewsImages.AddRangeAsync(newsImages);
+                }
                 newsDB.News.Update(news);
                 await newsDB.SaveChangesAsync();
 
@@ -327,6 +337,9 @@ namespace ASP_NewsModule.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            // В случае, если при редактировании пытаться загрузить картинку выше разрешенного лимита, то перестают отображаться уже имеющиеся изображения
+            // При перегонке модели из гет в пост, теряется список с изображениями. Причина пока не ясна, поэтому сделал такой костыль
+            // Счетчик соответственно тоже обнулялся, поэтому его тоже приходится переназначать заново
             List<NewsImage> images = new List<NewsImage>();
             foreach (var image in newsDB.NewsImages)
             {
