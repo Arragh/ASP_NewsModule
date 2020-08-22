@@ -24,12 +24,13 @@ namespace ASP_NewsModule.ViewModels.Admin
         public string NewsBody { get; set; }
 
         public DateTime NewsDate { get; set; }
+
         public string UserName { get; set; }
 
         [Display(Name = "Загрузить изображение")]
         public NewsImage NewsImage { get; set; }
 
-        public ICollection<NewsImage> NewsImages { get; set; }
+        public List<NewsImage> NewsImages { get; set; }
 
         public int ImagesCount { get; set; }
     }

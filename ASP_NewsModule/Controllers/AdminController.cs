@@ -200,7 +200,7 @@ namespace ASP_NewsModule.Controllers
             {
                 NewsTitle = news.NewsTitle,
                 NewsBody = news.NewsBody,
-                NewsImages = news.NewsImages,
+                NewsImages = images,
                 // Скрытые поля
                 NewsId = newsId,
                 NewsDate = news.NewsDate,
@@ -240,7 +240,7 @@ namespace ASP_NewsModule.Controllers
                     UserName = model.UserName
                 };
 
-                // Далее начинаем обработку изображений
+                // Далее начинаем обработку загружаемых изображений
                 List<NewsImage> newsImages = new List<NewsImage>();
                 foreach (var uploadedImage in uploads)
                 {
@@ -326,6 +326,17 @@ namespace ASP_NewsModule.Controllers
                 // Редирект на главную страницу
                 return RedirectToAction("Index", "Home");
             }
+
+            List<NewsImage> images = new List<NewsImage>();
+            foreach (var image in newsDB.NewsImages)
+            {
+                if (image.NewsId == model.NewsId)
+                {
+                    images.Add(image);
+                }
+            }
+            model.NewsImages = images;
+            model.ImagesCount = images.Count;
 
             // Возврат модели в представление в случае, если запорится валидация
             return View(model);
