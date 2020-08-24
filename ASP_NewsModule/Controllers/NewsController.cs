@@ -63,7 +63,7 @@ namespace ASP_NewsModule.Controllers
             }
 
             // Создаём модель для вывода на странице и кладём в неё все необходимые данные
-            NewsViewModel model = new NewsViewModel()
+            IndexViewModel model = new IndexViewModel()
             {
                 News = news,
                 NewsImages = newsImages,

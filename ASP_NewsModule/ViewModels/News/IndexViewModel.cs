@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ASP_NewsModule.ViewModels.News
 {
-    public class NewsViewModel
+    public class IndexViewModel
     {
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
