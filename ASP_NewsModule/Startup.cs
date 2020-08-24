@@ -38,7 +38,7 @@ namespace ASP_NewsModule
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute("default", "{controller=News}/{action=Index}/{id?}");
             });
         }
     }

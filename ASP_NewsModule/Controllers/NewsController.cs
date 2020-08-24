@@ -1,6 +1,6 @@
-﻿using ASP_NewsModule.Models.Home;
+﻿using ASP_NewsModule.Models.News;
 using ASP_NewsModule.Models.Service;
-using ASP_NewsModule.ViewModels.Admin;
+using ASP_NewsModule.ViewModels.News;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,25 +11,70 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ASP_NewsModule.Controllers
 {
-    public class AdminController : Controller
+    public class NewsController : Controller
     {
         NewsContext newsDB;
         IWebHostEnvironment _appEnvironment;
 
-        public AdminController(NewsContext newsContext, IWebHostEnvironment appEnvironment)
+        public NewsController(NewsContext newsContext, IWebHostEnvironment appEnvironment)
         {
             newsDB = newsContext;
             _appEnvironment = appEnvironment;
         }
 
-        public IActionResult Index()
+        #region Главная страница
+        public async Task<IActionResult> Index(int pageNumber = 1) // Страница по умолчанию = 1
         {
-            return View();
+            // Количество записей на страницу
+            int pageSize = 10;
+
+            // Формируем список записей для обработки перед выводом на страницу
+            IQueryable<NewsObject> source = newsDB.News;
+
+            // Рассчитываем, какие именно записи будут выведены на странице
+            List<NewsObject> news = await source.OrderByDescending(n => n.NewsDate).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Общее количество записей для дальнейшего рассчета количества страниц
+            int newsCount = await source.CountAsync();
+
+            // Создаем массив Id-шников записей для выборки изображений к ним
+            Guid[] newsIdArray = news.Select(n => n.Id).ToArray();
+
+            // Создаем список из изображений, которые будут поданы вместе со списом записей
+            List<NewsImage> newsImages = new List<NewsImage>();
+
+            // Перебираем изображения в БД
+            foreach (var image in newsDB.NewsImages)
+            {
+                // Перебираем все элементы ранее созданного массива Guid[] newsIdArray
+                foreach (var newsId in newsIdArray)
+                {
+                    // Если данные совпадают, то кладём изображение в список для вывода на странице
+                    if (image.NewsId == newsId)
+                    {
+                        newsImages.Add(image);
+                    }
+                }
+            }
+
+            // Создаём модель для вывода на странице и кладём в неё все необходимые данные
+            IndexViewModel model = new IndexViewModel()
+            {
+                News = news,
+                NewsImages = newsImages,
+                CurrentPage = pageNumber,
+                TotalPages = (int)Math.Ceiling(newsCount / (double)pageSize)
+            };
+
+            // Выводим модель в представление
+            return View(model);
         }
+        #endregion
 
         #region Создать новость [GET]
         [HttpGet]
@@ -57,7 +102,7 @@ namespace ASP_NewsModule.Controllers
             if (ModelState.IsValid)
             {
                 // Создаем экземпляр класса News и присваиваем ему значения
-                News news = new News()
+                NewsObject news = new NewsObject()
                 {
                     Id = Guid.NewGuid(),
                     NewsTitle = model.NewsTitle,
@@ -153,7 +198,7 @@ namespace ASP_NewsModule.Controllers
                 await newsDB.SaveChangesAsync();
 
                 // Редирект на главную страницу
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "News");
             }
 
             // Возврат модели в представление в случае, если запорится валидация
@@ -193,7 +238,7 @@ namespace ASP_NewsModule.Controllers
             }
 
             // Создаем экземпляр класса News и присваиваем ему значения из БД
-            News news = await newsDB.News.FirstAsync(n => n.Id == newsId);
+            NewsObject news = await newsDB.News.FirstAsync(n => n.Id == newsId);
             // Создаем список изображений из БД, закрепленных за выбранной новостью
             List<NewsImage> images = new List<NewsImage>();
             foreach (var image in newsDB.NewsImages)
@@ -239,7 +284,7 @@ namespace ASP_NewsModule.Controllers
             if (ModelState.IsValid)
             {
                 // Создаем экземпляр класса News и присваиваем ему значения
-                News news = new News()
+                NewsObject news = new NewsObject()
                 {
                     NewsTitle = model.NewsTitle,
                     NewsBody = model.NewsBody,
@@ -334,7 +379,7 @@ namespace ASP_NewsModule.Controllers
                 await newsDB.SaveChangesAsync();
 
                 // Редирект на главную страницу
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "News");
             }
 
             // В случае, если при редактировании пытаться загрузить картинку выше разрешенного лимита, то перестают отображаться уже имеющиеся изображения
@@ -363,7 +408,7 @@ namespace ASP_NewsModule.Controllers
             if (isChecked)
             {
                 // Создаем экземпляр новости для удаления. Достаточно просто присвоить Id удаляемой записи
-                News news = new News { Id = newsId };
+                NewsObject news = new NewsObject { Id = newsId };
 
                 // Проверяем, присутствуют ли в новости изображения
                 if (imagesCount > 0)
@@ -414,7 +459,7 @@ namespace ASP_NewsModule.Controllers
                 await newsDB.SaveChangesAsync();
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "News");
         }
         #endregion
     }

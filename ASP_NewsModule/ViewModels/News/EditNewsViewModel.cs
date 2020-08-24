@@ -1,9 +1,9 @@
-﻿using ASP_NewsModule.Models.Home;
+﻿using ASP_NewsModule.Models.News;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace ASP_NewsModule.ViewModels.Admin
+namespace ASP_NewsModule.ViewModels.News
 {
     public class EditNewsViewModel
     {

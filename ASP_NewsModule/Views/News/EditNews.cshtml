@@ -1,6 +1,6 @@
-﻿@model ASP_NewsModule.ViewModels.Admin.EditNewsViewModel
+﻿@model ASP_NewsModule.ViewModels.News.EditNewsViewModel
 
-<form asp-controller="Admin" asp-action="EditNews" method="post" enctype="multipart/form-data">
+<form asp-controller="News" asp-action="EditNews" method="post" enctype="multipart/form-data">
     <div>
         <input type="hidden" asp-for="NewsId" value="@Model.NewsId" />
         <input type="hidden" asp-for="NewsDate" value="@Model.NewsDate" />
@@ -28,13 +28,14 @@
         <input type="submit" value="Сохранить" />
     </div>
 </form>
-<br /><br />
+<br />
+<br />
 @if (Model.NewsImages != null && Model.NewsImages.Count > 0)
 {
     foreach (var image in Model.NewsImages)
     {
         <a href="@Url.Content(image.ImagePathNormal)"><img src="@Url.Content(image.ImagePathScaled)" /></a>
-        @Html.ActionLink("Удалить изображение", "EditNews", "Admin", new { newsId = Model.NewsId, imageToDeleteName = image.ImageName })
+        @Html.ActionLink("Удалить изображение", "EditNews", "News", new { newsId = Model.NewsId, imageToDeleteName = image.ImageName })
     }
 }
 

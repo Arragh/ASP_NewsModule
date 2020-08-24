@@ -1,15 +1,15 @@
-﻿@model ASP_NewsModule.ViewModels.Admin.AddNewsViewModel
+﻿@model ASP_NewsModule.ViewModels.News.AddNewsViewModel
 
-<form asp-controller="Admin" asp-action="AddNews" method="post" enctype="multipart/form-data">
+<form asp-controller="News" asp-action="AddNews" method="post" enctype="multipart/form-data">
     <div>
         <label asp-for="NewsTitle"></label><br />
         <input type="text" asp-for="NewsTitle" width="300" />
-        @Html.ValidationMessageFor(t=>t.NewsTitle)<br />
+        @Html.ValidationMessageFor(t => t.NewsTitle)<br />
     </div>
     <div>
         <label asp-for="NewsBody"></label><br />
         <textarea asp-for="NewsBody" rows="30" cols="100"></textarea>
-        @Html.ValidationMessageFor(b=>b.NewsBody)<br />
+        @Html.ValidationMessageFor(b => b.NewsBody)<br />
     </div>
     <div>
         <font color="red">@Html.ValidationMessageFor(f => f.NewsImage)</font><br />
