@@ -5,7 +5,7 @@ namespace ASP_NewsModule.Models.Service
 {
     public class NewsContext : DbContext
     {
-        public DbSet<NewsObject> News { get; set; }
+        public DbSet<News.News> News { get; set; }
         public DbSet<NewsImage> NewsImages { get; set; }
 
         public NewsContext(DbContextOptions<NewsContext> options) : base(options)

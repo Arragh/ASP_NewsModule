@@ -34,10 +34,10 @@ namespace ASP_NewsModule.Controllers
             int pageSize = 10;
 
             // Формируем список записей для обработки перед выводом на страницу
-            IQueryable<NewsObject> source = newsDB.News;
+            IQueryable<News> source = newsDB.News;
 
             // Рассчитываем, какие именно записи будут выведены на странице
-            List<NewsObject> news = await source.OrderByDescending(n => n.NewsDate).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            List<News> news = await source.OrderByDescending(n => n.NewsDate).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
             // Общее количество записей для дальнейшего рассчета количества страниц
             int newsCount = await source.CountAsync();
@@ -102,7 +102,7 @@ namespace ASP_NewsModule.Controllers
             if (ModelState.IsValid)
             {
                 // Создаем экземпляр класса News и присваиваем ему значения
-                NewsObject news = new NewsObject()
+                News news = new News()
                 {
                     Id = Guid.NewGuid(),
                     NewsTitle = model.NewsTitle,
@@ -238,7 +238,7 @@ namespace ASP_NewsModule.Controllers
             }
 
             // Создаем экземпляр класса News и присваиваем ему значения из БД
-            NewsObject news = await newsDB.News.FirstAsync(n => n.Id == newsId);
+            News news = await newsDB.News.FirstAsync(n => n.Id == newsId);
             // Создаем список изображений из БД, закрепленных за выбранной новостью
             List<NewsImage> images = new List<NewsImage>();
             foreach (var image in newsDB.NewsImages)
@@ -284,7 +284,7 @@ namespace ASP_NewsModule.Controllers
             if (ModelState.IsValid)
             {
                 // Создаем экземпляр класса News и присваиваем ему значения
-                NewsObject news = new NewsObject()
+                News news = new News()
                 {
                     NewsTitle = model.NewsTitle,
                     NewsBody = model.NewsBody,
@@ -408,7 +408,7 @@ namespace ASP_NewsModule.Controllers
             if (isChecked)
             {
                 // Создаем экземпляр новости для удаления. Достаточно просто присвоить Id удаляемой записи
-                NewsObject news = new NewsObject { Id = newsId };
+                News news = new News { Id = newsId };
 
                 // Проверяем, присутствуют ли в новости изображения
                 if (imagesCount > 0)

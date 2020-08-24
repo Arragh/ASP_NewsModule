@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ASP_NewsModule.Models.News
 {
-    public class NewsObject
+    public class News
     {
         public Guid Id { get; set; }
         public string NewsTitle { get; set; }
