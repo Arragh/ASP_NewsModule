@@ -2,7 +2,7 @@
 {
     public class Config
     {
-        public static string ASP_NewsModuleDB { get; set; }
+        public static string ASP_CmsDB { get; set; }
         public static string WebsiteName { get; set; }
     }
 }

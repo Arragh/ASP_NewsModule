@@ -18,9 +18,9 @@ namespace ASP_NewsModule
 
         public void ConfigureServices(IServiceCollection services)
         {
-            Configuration.Bind("ASP_NewsModule_Settings", new Config());
+            Configuration.Bind("ASP_CmsDB_Settings", new Config());
 
-            services.AddDbContext<NewsContext>(options => options.UseSqlServer(Config.ASP_NewsModuleDB));
+            services.AddDbContext<CmsContext>(options => options.UseSqlServer(Config.ASP_CmsDB));
 
             services.AddControllersWithViews().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }

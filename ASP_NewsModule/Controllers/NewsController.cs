@@ -18,12 +18,12 @@ namespace ASP_NewsModule.Controllers
 {
     public class NewsController : Controller
     {
-        NewsContext newsDB;
+        CmsContext CmsDB;
         IWebHostEnvironment _appEnvironment;
 
-        public NewsController(NewsContext newsContext, IWebHostEnvironment appEnvironment)
+        public NewsController(CmsContext newsContext, IWebHostEnvironment appEnvironment)
         {
-            newsDB = newsContext;
+            CmsDB = newsContext;
             _appEnvironment = appEnvironment;
         }
 
@@ -34,7 +34,7 @@ namespace ASP_NewsModule.Controllers
             int pageSize = 10;
 
             // Формируем список записей для обработки перед выводом на страницу
-            IQueryable<News> source = newsDB.News;
+            IQueryable<News> source = CmsDB.News;
 
             // Рассчитываем, какие именно записи будут выведены на странице
             List<News> news = await source.OrderByDescending(n => n.NewsDate).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -49,7 +49,7 @@ namespace ASP_NewsModule.Controllers
             List<NewsImage> newsImages = new List<NewsImage>();
 
             // Перебираем изображения в БД
-            foreach (var image in newsDB.NewsImages)
+            foreach (var image in CmsDB.NewsImages)
             {
                 // Перебираем все элементы ранее созданного массива Guid[] newsIdArray
                 foreach (var newsId in newsIdArray)
@@ -192,10 +192,10 @@ namespace ASP_NewsModule.Controllers
                 // Если в процессе выполнения не возникло ошибок, сохраняем всё в БД
                 if (newsImages != null && newsImages.Count > 0)
                 {
-                    await newsDB.NewsImages.AddRangeAsync(newsImages);
+                    await CmsDB.NewsImages.AddRangeAsync(newsImages);
                 }
-                await newsDB.News.AddAsync(news);
-                await newsDB.SaveChangesAsync();
+                await CmsDB.News.AddAsync(news);
+                await CmsDB.SaveChangesAsync();
 
                 // Редирект на главную страницу
                 return RedirectToAction("Index", "News");
@@ -214,7 +214,7 @@ namespace ASP_NewsModule.Controllers
             if (imageToDeleteName != null)
             {
                 // Создаем экземпляр класса картинки и присваиваем ему данные из БД
-                NewsImage newsImage = await newsDB.NewsImages.FirstAsync(i => i.ImageName == imageToDeleteName);
+                NewsImage newsImage = await CmsDB.NewsImages.FirstAsync(i => i.ImageName == imageToDeleteName);
 
                 // Делаем еще одну проверку. Лучше перебдеть. Если все ок, заходим в тело условия и удаляем изображения
                 if (newsImage != null)
@@ -232,16 +232,16 @@ namespace ASP_NewsModule.Controllers
                         imageScaled.Delete();
                     }
                     // Удаляем информацию об изображениях из БД и сохраняем
-                    newsDB.NewsImages.Remove(newsImage);
-                    await newsDB.SaveChangesAsync();
+                    CmsDB.NewsImages.Remove(newsImage);
+                    await CmsDB.SaveChangesAsync();
                 }
             }
 
             // Создаем экземпляр класса News и присваиваем ему значения из БД
-            News news = await newsDB.News.FirstAsync(n => n.Id == newsId);
+            News news = await CmsDB.News.FirstAsync(n => n.Id == newsId);
             // Создаем список изображений из БД, закрепленных за выбранной новостью
             List<NewsImage> images = new List<NewsImage>();
-            foreach (var image in newsDB.NewsImages)
+            foreach (var image in CmsDB.NewsImages)
             {
                 if (image.NewsId == newsId)
                 {
@@ -373,10 +373,10 @@ namespace ASP_NewsModule.Controllers
                 // Если в процессе выполнения не возникло ошибок, сохраняем всё в БД
                 if (newsImages != null && newsImages.Count > 0)
                 {
-                    await newsDB.NewsImages.AddRangeAsync(newsImages);
+                    await CmsDB.NewsImages.AddRangeAsync(newsImages);
                 }
-                newsDB.News.Update(news);
-                await newsDB.SaveChangesAsync();
+                CmsDB.News.Update(news);
+                await CmsDB.SaveChangesAsync();
 
                 // Редирект на главную страницу
                 return RedirectToAction("Index", "News");
@@ -386,7 +386,7 @@ namespace ASP_NewsModule.Controllers
             // При перегонке модели из гет в пост, теряется список с изображениями. Причина пока не ясна, поэтому сделал такой костыль
             // Счетчик соответственно тоже обнулялся, поэтому его тоже приходится переназначать заново
             List<NewsImage> images = new List<NewsImage>();
-            foreach (var image in newsDB.NewsImages)
+            foreach (var image in CmsDB.NewsImages)
             {
                 if (image.NewsId == model.NewsId)
                 {
@@ -416,7 +416,7 @@ namespace ASP_NewsModule.Controllers
                     // Создаем список для привязанных к удаляемой записи изображений
                     List<NewsImage> newsImages = new List<NewsImage>();
                     // Просматриваем всю БД с изображениями
-                    foreach (var image in newsDB.NewsImages)
+                    foreach (var image in CmsDB.NewsImages)
                     {
                         // Находим нужное и добавляем в список
                         if (image.NewsId == newsId)
@@ -451,12 +451,12 @@ namespace ASP_NewsModule.Controllers
                     // Удаляем изображения из БД
                     // Эта строка не обязательна, т.к. при удалении новости, записи с изображениями теряют связь по Id и трутся сами
                     // Достаточно просто удалить изображения из папок, что уже сделано выше
-                    newsDB.NewsImages.RemoveRange(newsImages);
+                    CmsDB.NewsImages.RemoveRange(newsImages);
                 }
 
                 // Удаляем новость из БД
-                newsDB.News.Remove(news);
-                await newsDB.SaveChangesAsync();
+                CmsDB.News.Remove(news);
+                await CmsDB.SaveChangesAsync();
             }
 
             return RedirectToAction("Index", "News");
