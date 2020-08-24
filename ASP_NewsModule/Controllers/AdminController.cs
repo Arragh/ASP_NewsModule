@@ -373,7 +373,7 @@ namespace ASP_NewsModule.Controllers
                     // Просматриваем всю БД с изображениями
                     foreach (var image in newsDB.NewsImages)
                     {
-                        // Находим нужное и кладём в список
+                        // Находим нужное и добавляем в список
                         if (image.NewsId == newsId)
                         {
                             newsImages.Add(image);

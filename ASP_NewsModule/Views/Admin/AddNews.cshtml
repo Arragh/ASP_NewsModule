@@ -13,9 +13,10 @@
     </div>
     <div>
         <font color="red">@Html.ValidationMessageFor(f => f.NewsImage)</font><br />
-        <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
-        <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
-        <input type="file" name="uploads" accept=".jpg,.jpeg,.png" /><br />
+        @for (int i = 0; i < 3; i++)
+        {
+            <input type="file" name="uploads" accept=".jpg,.jpeg,.png,.gif" /><br />
+        }
     </div>
     <div>
         <input type="submit" value="Опубликовать" />
