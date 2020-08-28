@@ -11,6 +11,7 @@ namespace ASP_NewsModule.Models.News
         public string ImageName { get; set; }
         public string ImagePathNormal { get; set; }
         public string ImagePathScaled { get; set; }
+        public DateTime ImageDate { get; set; }
         public Guid NewsId { get; set; }
     }
 }

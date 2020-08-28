@@ -214,7 +214,7 @@ namespace ASP_NewsModule.Controllers
             if (imageToDeleteName != null)
             {
                 // Создаем экземпляр класса картинки и присваиваем ему данные из БД
-                NewsImage newsImage = await cmsDB.NewsImages.FirstAsync(i => i.ImageName == imageToDeleteName);
+                NewsImage newsImage = await cmsDB.NewsImages.FirstOrDefaultAsync(i => i.ImageName == imageToDeleteName);
 
                 // Делаем еще одну проверку. Лучше перебдеть. Если все ок, заходим в тело условия и удаляем изображения
                 if (newsImage != null)
@@ -240,14 +240,7 @@ namespace ASP_NewsModule.Controllers
             // Создаем экземпляр класса News и присваиваем ему значения из БД
             News news = await cmsDB.News.FirstAsync(n => n.Id == newsId);
             // Создаем список изображений из БД, закрепленных за выбранной новостью
-            List<NewsImage> images = new List<NewsImage>();
-            foreach (var image in cmsDB.NewsImages)
-            {
-                if (image.NewsId == newsId)
-                {
-                    images.Add(image);
-                }
-            }
+            List<NewsImage> images = await cmsDB.NewsImages.Where(i => i.NewsId == newsId).OrderByDescending(i => i.ImageDate).ToListAsync();
 
             // Создаем модель для передачи в представление и присваиваем значения
             EditNewsViewModel model = new EditNewsViewModel()
@@ -363,7 +356,8 @@ namespace ASP_NewsModule.Controllers
                             ImageName = newFileName,
                             ImagePathNormal = pathNormal,
                             ImagePathScaled = pathScaled,
-                            NewsId = news.Id
+                            NewsId = news.Id,
+                            ImageDate = DateTime.Now
                         };
                         // Добавляем объект newsImage в список newsImages
                         newsImages.Add(newsImage);
@@ -385,14 +379,7 @@ namespace ASP_NewsModule.Controllers
             // В случае, если при редактировании пытаться загрузить картинку выше разрешенного лимита, то перестают отображаться уже имеющиеся изображения
             // При перегонке модели из гет в пост, теряется список с изображениями. Причина пока не ясна, поэтому сделал такой костыль
             // Счетчик соответственно тоже обнулялся, поэтому его тоже приходится переназначать заново
-            List<NewsImage> images = new List<NewsImage>();
-            foreach (var image in cmsDB.NewsImages)
-            {
-                if (image.NewsId == model.NewsId)
-                {
-                    images.Add(image);
-                }
-            }
+            List<NewsImage> images = await cmsDB.NewsImages.Where(i => i.NewsId == model.NewsId).OrderByDescending(i => i.ImageDate).ToListAsync();
             model.NewsImages = images;
             model.ImagesCount = images.Count;
 
@@ -413,23 +400,8 @@ namespace ASP_NewsModule.Controllers
                 // Проверяем, присутствуют ли в новости изображения
                 if (imagesCount > 0)
                 {
-                    // Создаем список для привязанных к удаляемой записи изображений
-                    List<NewsImage> newsImages = new List<NewsImage>();
-                    // Просматриваем всю БД с изображениями
-                    foreach (var image in cmsDB.NewsImages)
-                    {
-                        // Находим нужное и добавляем в список
-                        if (image.NewsId == newsId)
-                        {
-                            newsImages.Add(image);
-                        }
-                        // Если счетчик изображений становится равным количеству изображений в списке, выходим из цикла
-                        // Нужно для того, чтобы не делать лишние прогоны по БД
-                        if (imagesCount == newsImages.Count)
-                        {
-                            break;
-                        }
-                    }
+                    // Создаем список из привязанных к удаляемой записи изображений
+                    List<NewsImage> newsImages = await cmsDB.NewsImages.Where(i => i.NewsId == newsId).ToListAsync();
 
                     // Удаление изображений из папок
                     foreach (var image in newsImages)
