@@ -28,7 +28,7 @@
         <tr>
             <td>
                 <form asp-action="DeleteNews" asp-controller="News" method="post">
-                    <input type="hidden" name="NewsId" value="@news.Id" />
+                    <input type="hidden" name="newsId" value="@news.Id" />
                     <input type="checkbox" name="isChecked" value="true" />
                     <input type="hidden" name="imagesCount" value="@imagesCount" />
                     <span>Подтвердить удаление</span>
